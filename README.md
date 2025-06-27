@@ -5,12 +5,12 @@ Designed for CS/math students to upload lecture slides and past exams, then gene
 
 ---
 
-cli.py : entry point for CLI app. Handles input, file selection, and starts pipeline.
-llm.py : handles requests to LLM for actual test generation. Sends prompts and recieves responses from LLM + error handling.
-organizer.py : takes parsed text and organizes it into structure formats for cleaner prompt generation
-parser.py : parses and extracts readable text from machine readable PDF files
-output.py : handles formatting and saving generated questions for final output
-prompt_generation : uses organized text to build final prompt for LLM.
+cli.py : entry point for CLI app. Handles input, file selection, and starts pipeline.  
+llm.py : handles requests to LLM for actual test generation. Sends prompts and recieves responses from LLM + error handling.  
+organizer.py : takes parsed text and organizes it into structure formats for cleaner prompt generation  
+parser.py : parses and extracts readable text from machine readable PDF files  
+output.py : handles formatting and saving generated questions for final output  
+prompt_generation : uses organized text to build final prompt for LLM.  
 
 requirements.txt : Python dependencies
 
