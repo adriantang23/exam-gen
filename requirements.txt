@@ -3,3 +3,7 @@ python-pptx==0.6.21
 pdfplumber==0.10.3
 Pillow==10.1.0
 pytesseract==0.3.10
+
+# Added for LLM generation support
+openai==0.28.1
+python-dotenv>=1.0.0
