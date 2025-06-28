@@ -416,28 +416,13 @@ class DocumentParser:
             for slide_num, slide in enumerate(presentation.slides, 1):
                 slide_text = []
                 
-                # Extract text from all shapes in the slide (enhanced)
+                # Extract text from all shapes in the slide (this handles tables, placeholders, and charts)
                 slide_text.extend(self._extract_text_from_shapes(slide.shapes))
                 
-                # Extract text from tables
-                table_text = self._extract_text_from_tables(slide)
-                if table_text:
-                    slide_text.extend(table_text)
-                
-                # Extract text from charts and diagrams
-                chart_text = self._extract_text_from_charts(slide)
-                if chart_text:
-                    slide_text.extend(chart_text)
-                
-                # Extract slide notes (speaker notes)
+                # Extract slide notes (speaker notes) - this is separate from shapes
                 notes_text = self._extract_slide_notes(slide)
                 if notes_text:
                     slide_text.append(f"[NOTES: {notes_text}]")
-                
-                # Extract text from placeholders (title, content, etc.)
-                placeholder_text = self._extract_placeholder_text(slide)
-                if placeholder_text:
-                    slide_text.extend(placeholder_text)
                 
                 # Join all text from the slide and clean it
                 combined_text = "\n".join(slide_text)
@@ -463,22 +448,30 @@ class DocumentParser:
                 # Handle grouped shapes recursively
                 if hasattr(shape, "shapes"):
                     text_content.extend(self._extract_text_from_shapes(shape.shapes))
+                    continue  # Skip further processing for group shapes
                 
-                # Extract direct text content
+                # Extract text content - use shape.text which is the primary text property
+                # This automatically aggregates text from text frames, so we don't need both
                 if hasattr(shape, "text") and shape.text.strip():
                     text_content.append(shape.text.strip())
                 
-                # Handle text frames (more detailed text extraction)
-                if hasattr(shape, "text_frame"):
-                    frame_text = self._extract_text_from_text_frame(shape.text_frame)
-                    if frame_text:
-                        text_content.append(frame_text)
-                
                 # Handle tables within shapes
-                if hasattr(shape, "table"):
+                elif hasattr(shape, "table") and shape.table:
                     table_text = self._extract_text_from_table(shape.table)
                     if table_text:
                         text_content.extend(table_text)
+                
+                # Handle charts within shapes
+                elif hasattr(shape, "chart") and shape.chart:
+                    chart_text = self._extract_chart_text(shape.chart)
+                    if chart_text:
+                        text_content.extend(chart_text)
+                
+                # Handle complex shapes with embedded text as fallback
+                elif hasattr(shape, 'element') and shape.element is not None:
+                    embedded_text = self._extract_embedded_text(shape)
+                    if embedded_text:
+                        text_content.append(embedded_text)
                         
             except Exception as e:
                 # Continue processing other shapes even if one fails
@@ -513,18 +506,6 @@ class DocumentParser:
         
         return '\n'.join(paragraphs)
     
-    def _extract_text_from_tables(self, slide) -> List[str]:
-        """Extract text from all tables in the slide."""
-        table_texts = []
-        
-        for shape in slide.shapes:
-            if hasattr(shape, 'table') and shape.table:
-                table_text = self._extract_text_from_table(shape.table)
-                if table_text:
-                    table_texts.extend(table_text)
-        
-        return table_texts
-    
     def _extract_text_from_table(self, table) -> List[str]:
         """Extract text from a table structure."""
         if not table:
@@ -549,32 +530,6 @@ class DocumentParser:
             print(f"Warning: Error extracting table text: {e}")
         
         return table_content
-    
-    def _extract_text_from_charts(self, slide) -> List[str]:
-        """Extract text from charts and diagrams."""
-        chart_texts = []
-        
-        for shape in slide.shapes:
-            try:
-                # Handle charts
-                if hasattr(shape, 'chart') and shape.chart:
-                    chart_text = self._extract_chart_text(shape.chart)
-                    if chart_text:
-                        chart_texts.extend(chart_text)
-                
-                # Handle diagram/SmartArt (if available)
-                if hasattr(shape, 'element') and shape.element is not None:
-                    # Try to extract any embedded text
-                    embedded_text = self._extract_embedded_text(shape)
-                    if embedded_text:
-                        chart_texts.append(embedded_text)
-                        
-            except Exception as e:
-                # Continue processing other shapes
-                print(f"Warning: Error extracting chart text: {e}")
-                continue
-        
-        return chart_texts
     
     def _extract_chart_text(self, chart) -> List[str]:
         """Extract text from chart elements."""
@@ -639,24 +594,6 @@ class DocumentParser:
             pass
         
         return ""
-    
-    def _extract_placeholder_text(self, slide) -> List[str]:
-        """Extract text from slide placeholders (title, content, etc.)."""
-        placeholder_texts = []
-        
-        try:
-            if hasattr(slide, 'placeholders'):
-                for placeholder in slide.placeholders:
-                    if hasattr(placeholder, 'text') and placeholder.text.strip():
-                        placeholder_texts.append(placeholder.text.strip())
-                    elif hasattr(placeholder, 'text_frame'):
-                        placeholder_text = self._extract_text_from_text_frame(placeholder.text_frame)
-                        if placeholder_text.strip():
-                            placeholder_texts.append(placeholder_text.strip())
-        except Exception:
-            pass
-        
-        return placeholder_texts
     
     def get_document_info(self, file_path: Union[str, Path]) -> dict:
         """

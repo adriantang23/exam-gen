@@ -24,7 +24,7 @@ install_deps() {
     echo "📥 Installing dependencies..."
     source venv/bin/activate
     pip install --upgrade pip
-    pip install -r requirements.txt
+    pip install -r ../requirements.txt
     echo "✅ Dependencies installed"
 }
 
@@ -33,10 +33,10 @@ test_parser() {
     echo "🧪 Testing parser..."
     source venv/bin/activate
     echo "Testing PDF parsing..."
-    python parser.py scanable_pdf_test_documents/02-the-basics-A1.pdf | head -10
+    python parser.py ../scanable_pdf_test_documents/02-the-basics-A1.pdf | head -10
     echo ""
     echo "Testing PPTX parsing..."
-    python parser.py scanable_pdf_test_documents/Reinforcement_Learning.pptx | head -10
+    python parser.py ../scanable_pdf_test_documents/Reinforcement_Learning.pptx | head -10
     echo "✅ Parser tests completed"
 }
 
@@ -53,8 +53,8 @@ show_usage() {
     echo "  python parser.py <file_path>"
     echo ""
     echo "Examples:"
-    echo "  python parser.py scanable_pdf_test_documents/02-the-basics-A1.pdf"
-    echo "  python parser.py scanable_pdf_test_documents/Reinforcement_Learning.pptx"
+    echo "  python parser.py ../scanable_pdf_test_documents/02-the-basics-A1.pdf"
+    echo "  python parser.py ../scanable_pdf_test_documents/Reinforcement_Learning.pptx"
     echo ""
     echo "Options:"
     echo "  --no-ocr     Disable OCR fallback"
