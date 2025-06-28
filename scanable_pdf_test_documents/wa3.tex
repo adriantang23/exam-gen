@@ -1,0 +1,160 @@
+\documentclass[11pt]{article}
+
+\usepackage{amsfonts}
+%\usepackage{geometry}
+\usepackage[paper=a4paper, 
+            left=20.0mm, right=20.0mm, 
+            top=25.0mm, bottom=25.0mm]{geometry}
+\pagestyle{empty}
+\usepackage{graphicx}
+\usepackage{fancyhdr, lastpage, bbding, pmboxdraw}
+\usepackage[usenames,dvipsnames]{color}
+\definecolor{darkblue}{rgb}{0,0,.6}
+\definecolor{darkred}{rgb}{.7,0,0}
+\definecolor{darkgreen}{rgb}{0,.6,0}
+\definecolor{red}{rgb}{.98,0,0}
+\usepackage[colorlinks,pagebackref,pdfusetitle,urlcolor=darkblue,citecolor=darkblue,linkcolor=darkred,bookmarksnumbered,plainpages=false]{hyperref}
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+
+\pagestyle{fancyplain}
+\fancyhf{}
+\lhead{ \fancyplain{}{CS440: Introduction to AI} }
+%\chead{ \fancyplain{}{} }
+\rhead{ \fancyplain{}{\today} }
+%\rfoot{\fancyplain{}{page \thepage\ of \pageref{LastPage}}}
+\fancyfoot[RO, LE] {Page \thepage\ of \textcolor{black}{\pageref{LastPage}} }
+\thispagestyle{plain}
+
+%%%%%%%%%%%% LISTING %%%
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+\DeclareCaptionFont{white}{\color{white}}
+\DeclareCaptionFormat{listing}{\colorbox{gray}{\parbox{\textwidth}{#1#2#3}}}
+\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white}
+\usepackage{verbatim} % used to display code
+\usepackage{fancyvrb}
+\usepackage{acronym}
+\usepackage{amsthm, amsmath}
+\usepackage{tikz}
+    \usetikzlibrary{calc, arrows, arrows.meta, positioning}
+\usepackage{amssymb,amsmath,stackengine}
+\stackMath
+\usepackage{ifthen}
+
+\VerbatimFootnotes % Required, otherwise verbatim does not work in footnotes!
+
+\definecolor{OliveGreen}{cmyk}{0.64,0,0.95,0.40}
+\definecolor{CadetBlue}{cmyk}{0.62,0.57,0.23,0}
+\definecolor{lightlightgray}{gray}{0.93}
+
+\lstset{
+	%language=bash,                          % Code langugage
+	basicstyle=\ttfamily,                   % Code font, Examples: \footnotesize, \ttfamily
+	keywordstyle=\color{OliveGreen},        % Keywords font ('*' = uppercase)
+	commentstyle=\color{gray},              % Comments font
+	numbers=left,                           % Line nums position
+	numberstyle=\tiny,                      % Line-numbers fonts
+	stepnumber=1,                           % Step between two line-numbers
+	numbersep=5pt,                          % How far are line-numbers from code
+	backgroundcolor=\color{lightlightgray}, % Choose background color
+	frame=none,                             % A frame around the code
+	tabsize=2,                              % Default tab size
+	captionpos=t,                           % Caption-position = bottom
+	breaklines=true,                        % Automatic line breaking?
+	breakatwhitespace=false,                % Automatic breaks only at whitespace?
+	showspaces=false,                       % Dont make spaces visible
+	showtabs=false,                         % Dont make tabls visible
+	columns=flexible,                       % Column format
+	morekeywords={__global__, __device__},  % CUDA specific keywords
+}
+
+\newcommand{\question}[1]{\section*{\normalsize #1}}
+% \newcommand{\mat}[1]{\begin{bmatrix}#1\end{bmatrix}}
+% \newcommand{\extraspace}[]{
+%     \begin{center}
+%         \textbf{Use this page for extra space.}
+%     \end{center}
+% }
+
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+%\DeclareMathOperator*{\vec}[1]{\textbf{#1}}
+
+\newcommand{\squig}{{\scriptstyle\sim\mkern-3.9mu}}
+\newcommand{\lsquigend}{{\scriptstyle\lhd\mkern-3mu}}
+\newcommand{\rsquigend}{{\scriptstyle\rule{.1ex}{0ex}\rhd}}
+\newcounter{sqindex}
+\newcommand\squigs[1]{%
+  \setcounter{sqindex}{0}%
+  \whiledo {\value{sqindex}< #1}{\addtocounter{sqindex}{1}\squig}%
+}
+\newcommand\rsquigarrow[2]{%
+  \mathbin{\stackon[2pt]{\squigs{#2}\rsquigend}{\scriptscriptstyle\text{#1\,}}}%
+}
+\newcommand\lsquigarrow[2]{%
+  \mathbin{\stackon[2pt]{\lsquigend\squigs{#2}}{\scriptscriptstyle\text{\,#1}}}%
+}
+
+
+\begin{document}
+\begin{center}
+    {\Large \textsc{Written Assignment 3}}
+\end{center}
+\begin{center}
+    Due: Friday 02/21/2025 @ 11:59pm EST
+\end{center}
+
+\section*{\textbf{Disclaimer}}
+I encourage you to work together, I am a firm believer that we are at our best (and learn better) when we communicate with our peers. Perspective is incredibly important when it comes to solving problems, and sometimes it takes talking to other humans (or rubber ducks in the case of programmers) to gain a perspective we normally would not be able to achieve on our own. The only thing I ask is that you report who you work with: this is \textbf{not} to punish anyone, but instead will help me figure out what topics I need to spend extra time on/who to help. When you turn in your solution (please use some form of typesetting: do \textbf{NOT} turn in handwritten solutions), please note who you worked with.\newline
+
+
+
+\question{Question 1: Minimax Execution  (25 points)}
+Consider the tree expansion:
+
+\includegraphics[width=\linewidth]{./imgs/tree.png}
+
+\noindent Run the vanilla minimax algorithm on this tree (the root node is the \texttt{MAX} player and the two players \texttt{MAX} and \texttt{MIN} alternate turns) to determine what move the \texttt{MAX} player should make at the root. If you need a heuristic value, that the heuristic function is defined as follows:
+$$h(n) := n.level + n.idx$$
+where $n$ is a node in the tree, $n.level$ is the 1-indexed level of that node in the tree (i.e. the root has level 1, the next layer has level 2, etc.), and $n.idx$ is the 1-indexed index of that node within its level (i.e. the left most node in a level has index 1, the node immediately to its right has index 2, etc.). Show all of your steps.
+\newpage
+
+
+
+\question{Question 1: Iterative Deepening Execution  (25 points)}
+Consider the tree expansion:
+
+\includegraphics[width=\linewidth]{./imgs/tree.png}
+
+\noindent Run the Iterative Deepening algorithm on this tree (the root node is the \texttt{MAX} player and the two players \texttt{MAX} and \texttt{MIN} alternate turns) to determine what move the \texttt{MAX} player should make at the root. If you need a heuristic value, that the heuristic function is defined as follows:
+$$h(n) := n.level + n.idx$$
+where $n$ is a node in the tree, $n.level$ is the 1-indexed level of that node in the tree (i.e. the root has level 1, the next layer has level 2, etc.), and $n.idx$ is the 1-indexed index of that node within its level (i.e. the left most node in a level has index 1, the node immediately to its right has index 2, etc.). Show all of your steps.
+\newpage
+
+
+
+
+\question{Extra Credit: Correctness of Alpha-Beta Pruning (25 points)}
+Let $s$ be the state of the game, and assume that the game tree has a finite number of vertices. Let $v$ be the value produced by the minimax algorithm:
+$$v = \texttt{Minimax}(s)$$
+
+\noindent Let $v'$ be the result of running Alpha-Beta Pruning on $s$ with some initial values of $\alpha$ and $\beta$ (where $-\infty\le \alpha\le\beta\le+\infty$):
+$$v' = \texttt{Alpha-Beta-Pruning}(s, \alpha, \beta)$$
+
+\noindent Prove that the following statements are true:
+\begin{itemize}
+    \item If $\alpha \le v \le \beta$ then $v' = v$
+    \item If $v\le \alpha$ then $v'\le \alpha$
+    \item If $v \ge \beta$ then $v'\ge \beta$
+\end{itemize}
+
+\noindent This means that if the true minimax value is between $\alpha$ and $\beta$, then Alpha-Beta pruning returns the correct value. However, if the tru minimax value if outside of this range, then Alpha-Beta pruning may return a different value. However, the incorrect value that Alpha-Beta pruning returns is bounded in the same manner that the true minimax value is (i.e. if the true minimax value is $\le \alpha$ then the value produced by Alpha-Beta pruning is also $\le \alpha$ and vice versa). Note that this implies that Alpha-Beta pruning will be correct with initial values of $(-\infty, +\infty)$ for $(\alpha, \beta)$.\newline\newline
+
+\noindent Hint: use induction. If $s$ is not a terminal state, then you can correctly assume that the claim above holds for all children of $s$. Use this assumption to prove that it also holds for $s$ (the base case is trivial: minimax and Alpha-Beta pruning produce the same value for terminal states)\newpage
+
+
+
+\end{document}
+
