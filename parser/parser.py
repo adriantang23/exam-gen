@@ -67,6 +67,9 @@ class DocumentParser:
         if PPTX_AVAILABLE:
             self.supported_formats.append('.pptx')
         
+        # LaTeX files are always supported since they're plain text
+        self.supported_formats.append('.tex')
+        
         # Common symbol mappings for math/logic content
         self.symbol_mappings = {
             # Korean-looking characters that are actually math symbols
@@ -141,6 +144,8 @@ class DocumentParser:
                 return self._parse_pdf(file_path)
             elif file_extension == '.pptx':
                 return self._parse_pptx(file_path)
+            elif file_extension == '.tex':
+                return self._parse_latex(file_path)
         except Exception as e:
             raise Exception(f"Error parsing {file_path}: {str(e)}")
     
@@ -627,6 +632,325 @@ class DocumentParser:
             info['error'] = str(e)
         
         return info
+    
+    def _parse_latex(self, file_path: Path) -> List[str]:
+        """
+        Parse a LaTeX file and extract content segmented by questions/problems.
+        
+        Args:
+            file_path: Path to the LaTeX file
+            
+        Returns:
+            List of strings, each representing a question/problem section in raw LaTeX
+        """
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                content = file.read()
+        except UnicodeDecodeError:
+            # Fallback to latin-1 encoding if utf-8 fails
+            with open(file_path, 'r', encoding='latin-1') as file:
+                content = file.read()
+        
+        # Split content into logical sections
+        sections = self._segment_latex_by_questions(content)
+        
+        # Apply minimal cleaning (just normalize whitespace, keep LaTeX intact)
+        cleaned_sections = []
+        for section in sections:
+            # Only apply basic whitespace normalization, keep LaTeX commands
+            cleaned_section = self._minimal_latex_clean(section)
+            cleaned_sections.append(cleaned_section)
+        
+        return cleaned_sections
+    
+    def _segment_latex_by_questions(self, content: str) -> List[str]:
+        """
+        Segment LaTeX content by problems/questions using multiple detection patterns.
+        Tries patterns in order of preference until one works.
+        
+        Args:
+            content: Raw LaTeX content
+            
+        Returns:
+            List of content sections
+        """
+        sections = []
+        
+        # Find the document content (between \begin{document} and \end{document})
+        doc_start = content.find('\\begin{document}')
+        doc_end = content.find('\\end{document}')
+        
+        if doc_start == -1:
+            # No document environment found, use entire content
+            document_content = content
+        else:
+            doc_start += len('\\begin{document}')
+            if doc_end == -1:
+                document_content = content[doc_start:]
+            else:
+                document_content = content[doc_start:doc_end]
+        
+        import re
+        
+        # Define segmentation patterns in order of preference
+        segmentation_patterns = [
+            # Pattern 1: \question{...} commands (highest priority)
+            {
+                'name': 'question_commands',
+                'pattern': r'\\question\{([^}]+)\}',
+                'type': 'command'
+            },
+            
+            # Pattern 2: \begin{problem}...\end{problem} environments
+            {
+                'name': 'problem_environments', 
+                'pattern': r'\\begin\{problem\}',
+                'end_pattern': r'\\end\{problem\}',
+                'type': 'environment'
+            },
+            
+            # Pattern 3: \begin{xproblem}...\end{xproblem} environments (extra problems)
+            {
+                'name': 'xproblem_environments',
+                'pattern': r'\\begin\{xproblem\}',
+                'end_pattern': r'\\end\{xproblem\}',
+                'type': 'environment'
+            },
+            
+            # Pattern 4: Section-based divisions
+            {
+                'name': 'sections',
+                'pattern': r'\\section\*?\{([^}]+)\}',
+                'type': 'command'
+            },
+            
+            # Pattern 5: Subsection-based divisions
+            {
+                'name': 'subsections',
+                'pattern': r'\\subsection\*?\{([^}]+)\}',
+                'type': 'command'
+            },
+            
+            # Pattern 6: Other problem-like patterns
+            {
+                'name': 'paragraph_problems',
+                'pattern': r'\\paragraph\{([^}]*[Pp]roblem[^}]*)\}',
+                'type': 'command'
+            }
+        ]
+        
+        # Try each pattern until we find one that works
+        for pattern_info in segmentation_patterns:
+            sections = self._try_segmentation_pattern(document_content, pattern_info)
+            if len(sections) > 1:  # Found multiple sections
+                print(f"Successfully segmented using {pattern_info['name']}")
+                return sections
+        
+        # If no patterns worked, try page breaks as delimiter
+        sections = self._try_page_break_segmentation(document_content)
+        if len(sections) > 1:
+            print("Successfully segmented using page breaks")
+            return sections
+        
+        # Final fallback: return entire document as one section
+        print("No clear segmentation found, treating as single section")
+        cleaned_content = document_content.strip()
+        if cleaned_content:
+            return [cleaned_content]
+        else:
+            return [""]
+    
+    def _try_segmentation_pattern(self, content: str, pattern_info: dict) -> List[str]:
+        """
+        Try to segment content using a specific pattern.
+        
+        Args:
+            content: Document content
+            pattern_info: Pattern information dictionary
+            
+        Returns:
+            List of sections (empty if pattern doesn't work)
+        """
+        import re
+        sections = []
+        
+        if pattern_info['type'] == 'command':
+            # Handle command-based patterns like \question{...}, \section{...}
+            matches = list(re.finditer(pattern_info['pattern'], content))
+            
+            if not matches:
+                return []
+            
+            # Extract preamble if it contains meaningful content
+            first_match_start = matches[0].start()
+            preamble = content[:first_match_start].strip()
+            preamble_content = self._extract_meaningful_preamble(preamble)
+            if preamble_content:
+                sections.append(preamble_content)
+            
+            # Extract each section
+            for i, match in enumerate(matches):
+                section_start = match.start()
+                
+                # Find the end of this section (start of next section or end of document)
+                if i + 1 < len(matches):
+                    section_end = matches[i + 1].start()
+                else:
+                    section_end = len(content)
+                
+                # Extract section content
+                section_content = content[section_start:section_end].strip()
+                if section_content:
+                    sections.append(section_content)
+        
+        elif pattern_info['type'] == 'environment':
+            # Handle environment-based patterns like \begin{problem}...\end{problem}
+            begin_pattern = pattern_info['pattern']
+            end_pattern = pattern_info['end_pattern']
+            
+            # Find all begin/end pairs
+            begin_matches = list(re.finditer(begin_pattern, content))
+            if not begin_matches:
+                return []
+            
+            # Extract preamble
+            first_begin = begin_matches[0].start()
+            preamble = content[:first_begin].strip()
+            preamble_content = self._extract_meaningful_preamble(preamble)
+            if preamble_content:
+                sections.append(preamble_content)
+            
+            # Extract each environment
+            for begin_match in begin_matches:
+                begin_pos = begin_match.start()
+                
+                # Find the corresponding \end{...} after this \begin{...}
+                end_search_start = begin_match.end()
+                end_match = re.search(end_pattern, content[end_search_start:])
+                
+                if end_match:
+                    end_pos = end_search_start + end_match.end()
+                    environment_content = content[begin_pos:end_pos].strip()
+                    if environment_content:
+                        sections.append(environment_content)
+                else:
+                    # No matching end found, take until end of document
+                    environment_content = content[begin_pos:].strip()
+                    if environment_content:
+                        sections.append(environment_content)
+        
+        return sections
+    
+    def _try_page_break_segmentation(self, content: str) -> List[str]:
+        """
+        Try to segment content by page breaks.
+        
+        Args:
+            content: Document content
+            
+        Returns:
+            List of sections
+        """
+        import re
+        sections = []
+        
+        page_break_pattern = r'\\newpage|\\clearpage'
+        page_breaks = list(re.finditer(page_break_pattern, content))
+        
+        if not page_breaks:
+            return []
+        
+        # Split by page breaks
+        last_end = 0
+        for match in page_breaks:
+            section_content = content[last_end:match.start()].strip()
+            if section_content:
+                sections.append(section_content)
+            last_end = match.end()
+        
+        # Add final section
+        final_section = content[last_end:].strip()
+        if final_section:
+            sections.append(final_section)
+        
+        return sections
+    
+    def _extract_meaningful_preamble(self, preamble: str) -> str:
+        """
+        Extract meaningful content from document preamble, filtering out setup text.
+        
+        Args:
+            preamble: Raw preamble content
+            
+        Returns:
+            Meaningful preamble content or empty string
+        """
+        # Remove common document setup elements
+        setup_patterns = [
+            r'\\documentclass.*?\n',
+            r'\\usepackage.*?\n',
+            r'\\newcommand.*?\n',
+            r'\\definecolor.*?\n',
+            r'\\pagestyle.*?\n',
+            r'\\fancyhf.*?\n',
+            r'\\DeclareMathOperator.*?\n',
+            r'\\renewcommand.*?\n',
+            r'%.*?\n',  # Comments
+        ]
+        
+        import re
+        meaningful_content = preamble
+        for pattern in setup_patterns:
+            meaningful_content = re.sub(pattern, '', meaningful_content, flags=re.MULTILINE)
+        
+        # Look for actual content like titles, disclaimers, etc.
+        meaningful_content = meaningful_content.strip()
+        
+        # If the remaining content has substantial text (not just whitespace/braces), keep it
+        import re
+        text_content = re.sub(r'[{}\\]', '', meaningful_content)
+        text_content = re.sub(r'\s+', ' ', text_content).strip()
+        
+        # Keep if it has at least 20 characters of meaningful text
+        if len(text_content) > 20:
+            return meaningful_content
+        else:
+            return ""
+    
+    def _minimal_latex_clean(self, text: str) -> str:
+        """
+        Apply minimal cleaning to LaTeX text, preserving LaTeX commands and math.
+        
+        Args:
+            text: Raw LaTeX text
+            
+        Returns:
+            Minimally cleaned LaTeX text
+        """
+        if not text:
+            return ""
+        
+        import re
+        
+        # Only normalize excessive whitespace, preserve LaTeX structure
+        cleaned = text
+        
+        # Normalize excessive newlines (max 2 consecutive)
+        cleaned = re.sub(r'\n\s*\n\s*\n+', '\n\n', cleaned)
+        
+        # Normalize spaces and tabs (but preserve intentional spacing)
+        cleaned = re.sub(r'[ \t]+', ' ', cleaned)
+        
+        # Trim leading/trailing whitespace from each line while preserving indentation structure
+        lines = cleaned.split('\n')
+        normalized_lines = []
+        for line in lines:
+            # Only strip trailing whitespace, preserve leading whitespace for LaTeX indentation
+            normalized_lines.append(line.rstrip())
+        
+        cleaned = '\n'.join(normalized_lines)
+        
+        return cleaned.strip()
 
 
 def parse_document(file_path: Union[str, Path], use_ocr_fallback: bool = True, 
@@ -652,9 +976,19 @@ def main():
     """
     if len(sys.argv) < 2:
         print("Usage: python parser.py <file_path> [--no-ocr] [--no-clean]")
-        print("Example: python parser.py scanable_pdf_test_documents/02-the-basics-A1.pdf")
+        print("Examples:")
+        print("  python parser.py scanable_pdf_test_documents/02-the-basics-A1.pdf")
+        print("  python parser.py scanable_pdf_test_documents/Reinforcement_Learning.pptx")
+        print("  python parser.py scanable_pdf_test_documents/wa3.tex")
+        print("  python parser.py scanable_pdf_test_documents/CS237hw5.tex")
+        print()
+        print("Supported formats:")
+        print("  PDF  - Multiple extraction methods with OCR fallback")
+        print("  PPTX - Comprehensive content extraction (slides, notes, charts)")
+        print("  LaTeX - Auto-detects structure: \\question{}, \\begin{problem}, \\section{}, etc.")
+        print()
         print("Options:")
-        print("  --no-ocr    Disable OCR fallback")
+        print("  --no-ocr    Disable OCR fallback (PDF only)")
         print("  --no-clean  Disable symbol cleaning")
         return
     
@@ -683,11 +1017,22 @@ def main():
         # Parse the document
         pages = parser.parse_document(file_path)
         
-        print(f"Successfully parsed {len(pages)} {'pages' if info['file_extension'] == '.pdf' else 'slides'}:")
+        # Determine appropriate terminology based on file type
+        if info['file_extension'] == '.pdf':
+            unit_name = 'pages'
+        elif info['file_extension'] == '.pptx':
+            unit_name = 'slides'
+        elif info['file_extension'] == '.tex':
+            unit_name = 'sections'
+        else:
+            unit_name = 'sections'
+        
+        print(f"Successfully parsed {len(pages)} {unit_name}:")
         print("=" * 50)
         
         for i, page_content in enumerate(pages, 1):
-            print(f"\n--- Page/Slide {i} ---")
+            unit_label = unit_name[:-1].title()  # Convert 'pages' to 'Page', etc.
+            print(f"\n--- {unit_label} {i} ---")
             if page_content:
                 # Show first 200 characters of each page
                 preview = page_content[:200]

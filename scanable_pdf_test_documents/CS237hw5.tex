@@ -1,0 +1,167 @@
+\documentclass[letterpaper,11pt]{article}
+\usepackage{xfrac}
+\usepackage{fullpage,amsthm,amsmath,amsfonts,amssymb,graphicx,hyperref,color,clrscode,enumitem,float}
+
+% Choose one option (bubbles)
+\newcommand{\chooseone}{{\large{\mbox{$\bigcirc$}}\ }}
+
+% For automata drawings
+\usepackage{pgf,wrapfig}
+\usepackage{tikz}
+\usepackage{skak} %for drawing chess symbols
+\usetikzlibrary{arrows,automata}%,snakes}
+\usetikzlibrary{decorations.pathreplacing} %for braces
+\addtolength{\textwidth}{0.2in}
+\addtolength{\oddsidemargin}{-0.1in}
+\addtolength{\evensidemargin}{-0.1in}
+
+\addtolength{\textheight}{0.5in}
+\addtolength{\topmargin}{-0.25in}
+
+\theoremstyle{plain}% default
+\newtheorem{thrm}{Theorem}[section]
+\newtheorem{lemm}[thrm]{Lemma}
+\newtheorem{prop}[thrm]{Proposition}
+\newtheorem*{cor}{Corollary}
+\newtheorem*{rem}{Remark}
+
+\theoremstyle{definition}
+\newtheorem{claim}{Claim}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{observation}{Observation}
+\newtheorem{problem}{Problem}
+\newtheorem*{xproblem}{EXTRA Problem}
+\newtheorem{proposition}{Proposition}
+
+
+\theoremstyle{plain}% default
+
+\newenvironment{solution}
+  {\begin{quote}\color{blue}\textbf{Solution}. \small}
+  {\end{quote}}
+
+
+\begin{document}
+{\noindent\large
+CS 237: {\em Probability in Computing} \hfill Professors: Aline Ene, Tiago Januario\\
+Boston University \hfill \today\\}
+\vspace{1pt} \hrulefill\vspace{3mm}
+\begin{center}
+{\Large\bf Homework 5 -- Due Wednesday, October 09, 2024 \underline{by 9:00 PM}}
+\end{center}
+
+\begin{itemize}
+\item Provide step-by-step explanations, not just answers. Answers without explanations will earn a small fraction of the points.
+\item Submit your solutions on Gradescope. Remember to include information about your collaborators (or say ``Collaborators: none'').
+\end{itemize}
+
+\vspace*{-2mm}
+
+\begin{problem}(\textbf{Understanding conditional probability}, 10 points) Consider these two independent random experiments: (i) roll a pair of standard 6-sided fair dice, and (ii) draw two cards from an ordinary deck of 52 cards, without replacement.
+    \begin{enumerate}[label=(\alph*)]
+        \item Find the probability that neither die shows a 4, given that they sum to 7.
+        \item Find the probability that they sum to 7, given that neither die shows a 4.
+        \item Find the probability that both cards are clubs, given the 3 of clubs is chosen.
+    \end{enumerate}
+\end{problem}
+
+\begin{problem} ({\bf Continuous conditional probability}, 10 points)
+
+At the fair, there's a 0-1 continuous spinner game you can play for \$1. Take three spins and if the total of your three spins is greater than 2.1, you win \$7. 
+
+\begin{enumerate}[label=(\alph*)]
+ 
+\item  Assume spin outcomes are uniform on [0,1) and independent.  What is the chance you win, given that your first spin is 0.6?
+\item  After watching many people play the game (and almost always lose), you notice that the spinner is tilted to disadvantage the player.  Outcomes of random spins (random variable $X$) follow a PDF $f_X(x) = 1.5 - x$ for $x \in [0,1)$. First, verify that this is a valid PDF. Then compute the chance you win given this new information and that your total after your first two spins is equal to 1.3.
+\end{enumerate}
+
+\end{problem}
+
+
+\begin{problem} (\textbf{Never tell me the odds!\footnote{Never tell me the odds is a memorable quote by Han Solo. It was used as a reply to C-3PO telling Han the odds of successfully navigating an asteroid field, which, by the way, was very low.}}, 10 points)
+Annie is a huge Star Wars fan. Currently, it is the holiday season, so what better time is there for her to go on a Star Wars watch spree? For each episode, she categorized as either good, average, or bad, as shown in the table below.
+
+\begin{center}
+    \begin{tabular}{|c|c|}
+         \hline
+         \bf{Rating}   & \bf{Episodes} \\
+         \hline
+         Good    & 3, 4, 5, 6 \\
+         Average & 1, 2 \\
+         Bad     & 7, 8, 9  \\
+         \hline
+    \end{tabular}
+\end{center}
+
+Being a former CS237 TA, she decided to involve some randomness and pick an episode uniformly at random. However, Annie isn't very patient and usually stops watching partway through an episode. For the sake of this problem, assume every episode is 2 hours long.
+
+Let $T$ be a continuous random variable representing the number of hours she watches an episode. If the episode is good, $T$ follows the PDF described by $f_T(t)$. If it's average, $T$ follows the PDF $g_T(t)$. If it's bad, $T$ follows the PDF $h_T(t)$
+
+$$f_T(t) =
+\begin{cases}
+    \frac 3 8 t^2   & t \in [0, 2] \\
+    0               & \text{otherwise}
+\end{cases}
+\quad \quad
+g_T(t) =
+\begin{cases}
+    \frac 1 2 t & t \in [0, 2] \\
+    0           & \text{otherwise}
+\end{cases}
+\quad \quad
+h_T(t) =
+\begin{cases}
+    \frac{3}{2}\cdot\frac{1}{(t+1)^2} & t \in [0, 2] \\
+    0           & \text{otherwise}
+\end{cases}$$
+
+Now she picks a random episode from 1-9 and starts watching.
+
+\begin{enumerate}[label=(\alph*)]
+    \item What is the probability that Annie watched the movie for at least half an hour given that she picked a bad episode?
+    \item What is the probability that Annie watched an episode for more than an hour?
+    \item Given that Annie watched an episode for at least 1 hour, what is the probability that she watched a good episode?
+\end{enumerate}
+\end{problem}
+
+\begin{problem}(\textbf{Another trip around the sun}, 10 points) Annie is about to celebrate her birthday. She normally celebrates it with the CS237 staff, but this year, she really wants to celebrate it someone who shares a birthday with her (a ``birthday buddy''). She will go out and ask random people for their birthday until she finds a birthday buddy. Each person she asks can have any birthday with uniform probability, independent of other people. For this problem, assume that no one is born on a leap day and that she may ask infinite people.
+
+    \begin{enumerate}[label=(\alph*)]
+        \item What is the probability she finds a birthday buddy after asking 10 or fewer people?
+        \item What is the probability that she will never find a birthday buddy?
+    \end{enumerate}
+    After failing to find a birthday buddy for a while, Annie develops a more lenient approach. If someone's birthday is one day away from hers, she will flip a fair coin. If the coin lands heads, she will declare that person her birthday buddy.
+    \begin{enumerate}[resume,label=(\alph*)]
+        \item What is the probability that her birthday buddy actually shares a birthday with her?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem} (\textbf{A shirt for every occasion}, 10 points)
+Feeling uninspired by his daily shirt selection, Professor Tiago implements a probabilistic algorithm to determine his wardrobe for the next five days. The rules are as follows:
+
+
+\begin{itemize}
+    \item On Monday, Tiago rolls a die to decide his shirt color. If the die lands on an \textbf{odd number}, he’ll wear \textbf{red (R)}. If it lands on an \textbf{even number}, he’ll wear \textbf{blue (B)}.
+    
+    \item From Tuesday onwards, if Tiago wears \textbf{blue (B)} on any day, he will automatically switch to \textbf{red (R)} the next day.
+        
+    \item If Tiago wears \textbf{red (R)} for just one day, he’ll roll the die again to decide his shirt color for the following day.
+        
+    \item If Tiago has worn \textbf{red (R)} for \textbf{two consecutive days}, there’s a higher chance he’ll stay in red. The probability that he stays in \textbf{red (R)} on the third day is \(\frac{4}{5}\), and the probability that he switches to \textbf{blue (B)} is \(\frac{1}{5}\).
+        
+    \item Tiago will \textbf{never wear red for more than three consecutive days}. If he wears \textbf{red (R)} for three days straight, he will automatically switch to \textbf{blue (B)} on the fourth day.
+    \end{itemize}
+
+\begin{enumerate}[label=(\alph*)]
+    \item Draw a tree diagram that represents Tiago’s possible shirt choices from Monday to Friday based on the above algorithm. Each path on the tree should show a sequence of R (red) and B (blue), representing the shirt colors he could wear, like BRBRR.
+    \item Tiago wore red on Tuesday. What is the probability that he will also wear red on Thursday? 
+    \item Given that Tiago wears blue on Thursday, what is the probability that he wore red for the three consecutive days leading up to Thursday?
+\end{enumerate}
+\end{problem}
+
+\begin{problem}({\bf Programming assignment}, 10 points) Download the Python notebook named hw05.ipynb from Piazza. The exact online version is also available for download on Google Colab. Complete all the code assignments in the Python notebook. Submit the Python notebook with your code solutions to ``Homework 05 - Programming assignment'' on Gradescope. Your submission should be a single .ipynb file. Python notebooks are graded manually; therefore, you must follow all the instructions in the file.
+\end{problem}
+
+\end{document}

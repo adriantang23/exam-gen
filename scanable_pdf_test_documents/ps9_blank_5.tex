@@ -1,0 +1,205 @@
+\documentclass[11pt]{article}
+\usepackage{listings}
+\usepackage{graphicx} %package to manage images for problem 4
+\usepackage{array,etoolbox} %package for tables
+\usepackage{enumitem} %for the roman numerals
+\usepackage[]{mdframed} %for the box
+\usepackage{amsmath}
+\newif\ifsol
+\newif\ifnotes
+\soltrue
+\notestrue
+\usepackage{../../main}
+\preto\tabular{\setcounter{magicrownumbers}{0}}
+\newcounter{magicrownumbers}
+\def\rownumber{}
+
+\begin{document}
+\problemset{9}{Due Monday, April 29, 2024 at 11:59pm}
+
+\textbf{NOTE: For combinatorics questions, it is imperative that your answer includes your work or reasoning}\\
+
+Answers without explanations will not get credit. You must leave your answers in choose notation (${n \choose k}$) or as a permutation ($P(n, k)$) or some mathematical formula.\\
+
+\underline{A NUMBER written without explanation or not set equal to some formula is WORTH ZERO POINTS.}
+
+\begin{problem} (15 points)
+Recall Lucas and Augusts' observations of the RoboBunny\texttrademark. The recurrence relation is given below:
+
+$$p_0 = 1$$
+$$p_n = p_{n-1} + 3^{n}$$ 
+
+Prove for any year $n \in \mathbb{N}$, the population of RoboBunnies\texttrademark is equal to $\frac{3^{n+1}-1}{2}$, only this time, using the \textbf{Well-Ordering Principle}. 
+
+
+\end{problem}
+
+\bigskip
+
+	\begin{problem} (15 points)
+		
+		Consider a set of strings S defined over the alphabet $\Sigma = \{y, z\}$ and defined recursively as follows:
+		\begin{itemize}
+			\item Base case: $zz \in S, yy \in S$
+			\item Recursive rules: if $x \in S$ then:
+			\begin{itemize}
+				\item [$\circ$] $xz \in S$ (rule 1)
+				\item [$\circ$] $zx \in S$ (rule 2)
+				\item [$\circ$] $yxy \in S$ (rule 3)
+				\item [$\circ$] $yyx \in S$ (rule 4)
+			\end{itemize}
+		\end{itemize}
+		
+		Prove that: every string in $S$ contains an even number of $y$'s\\
+		
+		\textbf{Note}:  The set $S$ as defined does not contain every string over the alphabet $\{y, z\}$ that contains an even number of $y$'s. Therefore, the converse of this statement (if $x$ has an odd number of $y$'s then $x \in S$) is not true.
+		
+		
+		
+		
+		
+	\end{problem}
+
+  \bigskip
+	\begin{problem} (15 points)
+		
+	Consider the set of full binary trees T defined recursively below:
+		\begin{itemize}
+			\item Base case: A single node r is in T
+			\item Recursive Rule: If $T_1$, $T_2$ are full binary trees with roots $r_1$, $r_2$ and $r$ is a node, then adding edges from $r_1$ and $r_2$ to $r$ creates a new full binary tree with root $r$. 
+		\end{itemize}
+		
+		Prove that the height of the tree will always be less than or equal to $2^v - 2$, where $v$ represents the number of nodes in the tree.\\
+		\textbf{Note}: The height of a tree is the number of edges between the root node and it's furthest leaf node.\\
+		
+
+		
+		
+\end{problem}
+
+\bigskip
+
+\begin{problem} (6 points, 3 each)
+Consider the boolean expression $p \cdot (q + \overline{r})$
+
+\begin{ppart}
+Give the Conjunctive Normal Form version of the expression.
+
+
+\end{ppart}
+
+\begin{ppart}
+Give the Disjunctive Normal Form version of the expression.
+
+
+\end{ppart}
+\end{problem}
+
+\begin{problem} 
+    Suppose the alphabet, $\Sigma$, consists of the 26 (lowercase) letters in the Latin (also English) alphabet.
+
+	\begin{ppart} (3 points)
+		Consider $L$, the set of strings of length 10, which may contain repeated letters. What is $|L|$?
+
+		
+	\end{ppart}
+
+	\begin{ppart} (6 points)
+		Let us redefine the term `anagrams' as follows: two strings are considered `anagrams' if they share the same \emph{set} of letters. For example, \emph{spots} and \emph{post} are `anagrams'
+		because they use only and all of the letters in the set $\{o, p, s, t\}$. \\
+
+		Using this new definition, how many anagrams can be made sharing the set $\{a,b\}$, in $L$, the set of strings of length 10?
+
+		
+	\end{ppart}
+
+	\begin{ppart} (6 points)
+		Let an \textbf{anagram class} be the set of \emph{strings} that share their set of letters. For example, $silent$, $enlists$, and $listens$ are all part of the same anagram class. \\
+
+		How many anagram classes are there, for all \textbf{non-empty} (non-zero length) strings? Use the bijection rule explain your answer.
+
+		
+	\end{ppart}
+\end{problem}
+\bigskip 
+
+ \begin{problem}
+ License Plate Possibilities
+
+ \begin{ppart} (4 points)
+     Mike is buying a car and has to get it registered with the RMV. The RMV gives him the option to choose his license plate ID with the following constraints:
+     \begin{itemize}
+         \item There are 6 characters.
+         \item The first 2 characters must be letters.
+         \item The last 4 characters must be digits.
+     \end{itemize}
+
+     How many different options does Mike have for his license plate? You can write out your solution as a product.
+
+   
+ \end{ppart}
+
+\begin{ppart} (4 points)
+The RMV has decided that it wants to exclude license plates with the following patterns:
+
+\begin{itemize}
+\item AB****
+\item **12**
+\item ****34
+\end{itemize}
+
+Now how many choices are there?
+\end{ppart}
+
+ \begin{ppart} (6 points)
+    The RMV decided that was silly. THE EXCLUSIONS FROM PART b) NO LONGER APPLY IN THIS OR ANY FUTURE PROBLEM PART.
+\\\\\
+Someone sued the RMV, no one is quite sure why, but they were forced to change the rules for license plates to the following.
+     \begin{itemize}
+         \item There are 6 characters.
+         \item There are 2 letters and 4 numbers, but can be in any spot.
+     \end{itemize}
+
+     How many options does Mike have now?
+
+    
+ \end{ppart}
+
+ \begin{ppart} (6 points)
+     The RMV has successfully won an injunction in court, but with the following modifications to the rules.
+     \begin{itemize}
+         \item There are 6 characters,
+         \item The first 2 characters must be letters and cannot repeat.
+         \item The last 4 characters must be distinct digits and must be in increasing order.
+     \end{itemize}
+
+     How many options does Mike have now?
+
+    
+ \end{ppart}
+ \end{problem}
+
+ \begin{problem}
+ 
+ \begin{ppart} (5 points)
+     Mike is an avid ice cream enjoyer. In 2023 (a non-leap year), Mike decided to challenge himself and eat one scoop of ice cream every day. His favorite shop only sells ten flavors. Prove that Mike has eaten at least one flavor on at least 37 days throughout the year.
+
+   
+\end{ppart}
+
+\begin{ppart} (9 points) Mike, David, and Tim have all been to a different ice cream shop that has 131 flavors. All together, they have tried all of the flavors.\\
+
+Mike has has tried 72 flavors at this shop, David has tried 63, and Tim has tried 42.\\
+
+Mike and David have tried 20 of the same flavors, David and Tim have tried 14 of the same flavors, and Tim and Mike have tried 18 of the same flavors. \\
+
+All three have them have tried 6 of the same flavors. \\
+
+How many of the flavors have \textbf{only} been tried by Mike, and not the others? How many flavors have only been tried by David? How many flavors have only been tried by Tim?
+\end{ppart}
+ \end{problem}
+ 
+
+
+
+\end{document}
