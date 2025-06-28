@@ -192,3 +192,7 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# Project-specific files
+# Generated parsed content from documents (homework, slides, exams)
+parsed_output/
