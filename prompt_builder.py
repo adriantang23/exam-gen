@@ -26,7 +26,7 @@ def main():
     results = organizer.process_files()
 
     # run through LLM.py to generate prompts
-    generator = LLMExamGenerator()
+    generator = LLMExamGenerator(slides_per_group=30)
     generator.generate_from_homeworks("""You are an instructor coming up with an exam. 
     You are looking through previous homework problems for inspiration.
     Generate questions based on this, and be pretty similar to them. 
