@@ -196,3 +196,7 @@ cython_debug/
 # Project-specific files
 # Generated parsed content from documents (homework, slides, exams)
 parsed_output/
+# Generated questions from LLM
+LLM_output/
+# Generated final practice exams
+final_exams/

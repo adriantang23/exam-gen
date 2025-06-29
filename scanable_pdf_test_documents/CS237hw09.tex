@@ -1,0 +1,143 @@
+\documentclass[letterpaper,11pt]{article}
+\usepackage{xfrac}
+\usepackage{fullpage,amsthm,amsmath,amsfonts,amssymb,graphicx,color,clrscode,enumitem,float}
+\usepackage[hidelinks]{hyperref}
+\usepackage{pgf,wrapfig}
+\usepackage{tikz}
+\usepackage{forest}
+\usetikzlibrary{arrows,automata}
+\usetikzlibrary{decorations.pathreplacing}
+\addtolength{\textwidth}{0.2in}
+\addtolength{\oddsidemargin}{-0.1in}
+\addtolength{\evensidemargin}{-0.1in}
+\addtolength{\textheight}{0.5in}
+\addtolength{\topmargin}{-0.25in}
+\theoremstyle{plain}
+\newtheorem{thrm}{Theorem}[section]
+\newtheorem{lemm}[thrm]{Lemma}
+\newtheorem{prop}[thrm]{Proposition}
+\newtheorem*{cor}{Corollary}
+\newtheorem*{rem}{Remark}
+\theoremstyle{definition}
+\newtheorem{claim}{Claim}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{observation}{Observation}
+\newtheorem{problem}{\textcolor{blue}{Problem}}
+\newtheorem*{xproblem}{EXTRA Problem}
+\newtheorem{proposition}{Proposition}
+
+\newenvironment{solution}
+  {\begin{quote}\color{blue}\textbf{Solution}. \small}
+  {\end{quote}}
+
+\newcommand{\E}{\mathbb{E}}
+
+\theoremstyle{plain}
+
+\begin{document}
+
+{\noindent\large
+CS 237: {\em Probability in Computing} \hfill Professors: Alina Ene, Tiago Januario\\
+Boston University \hfill \today\\}
+\vspace{1pt} \hrulefill\vspace{3mm}
+\begin{center}
+{\Large\bf Homework 9 -- Due Wednesday, November 13$^{rd}$, 2024 \underline{by 9:00 PM}}
+\end{center}
+
+\begin{itemize}
+\item Provide step-by-step explanations, not just answers. Answers without explanations will earn a small fraction of the points.
+\item Submit your solutions on Gradescope. Remember to include information about your collaborators (or say ``Collaborators: none'').
+\end{itemize}
+
+\begin{problem}[\textbf{The Bunny sitter}, 10 points]
+
+Noah is feeding his bunny some delicious carrots. He has $n$ carrots in which the $i$-th carrot has a tastiness\footnote{Tastiness is a noun that means the quality of being pleasant to taste.} of $a_i$. 
+
+\begin{enumerate}[label=(\alph*)]
+\item Noah doesn't know how many carrots he should feed his bunny, so for each carrot, Noah independently chooses to give a carrot to his bunny with the probability of $\frac{1}{2}$. The happiness of his bunny is measured by the sum of the tastiness of all the carrots it eats. What is the expected value of his bunny's happiness, assuming that the happiness of his bunny is $0$ if it doesn't eat any carrots?
+
+\item Noah doesn't want his bunny to starve so he chooses a fixed number $k$. Then, Noah uniformly and randomly feeds his bunny $k$ carrots out of $n$ carrots available. What is the expected value of his bunny's happiness?
+
+\item Noah has to take care of Riva's $2$ bunnies so now he has $3$ bunnies to feed even though he still has the same amount of $n$ carrots.  For each carrot, each bunny then chooses to eat the carrot independently with the probability of $\frac{1}{2}$. If $b \geq 1$ bunnies decide to eat that carrot, Noah will break the carrot equally into $b$ pieces of $\frac{a_i}{b}$ tastiness and feed each $b$ bunny one piece of the carrot. What is the expected value of Noah's rabbit's happiness?
+\end{enumerate}
+\end{problem}
+
+\begin{problem}[\textbf{Noah's company}, 10 points]
+    Noah has opened two highly lucrative Bunny sitting companies: Amazing Hops and Bunny Barn. The revenue for each company in a given month is not constant: some months are well-paid, and some are not. Let $X$ be a random variable of Amazing Hops's revenue and $Y$ be a random variable of Bunny Barn's revenue. 
+    It is known that:
+    \begin{itemize}
+        \item The expected revenue of Amazing Hops is \$80,000.
+        \item The expected revenue of Bunny Barn depends on Amazing Hops's revenue, following the formula: $\E(Y|X=x) = 0.5x + \$20,000$.
+    \end{itemize}
+    \begin{enumerate}[label=(\alph*)]
+        \item If Amazing Hops's revenue for a particular month is observed to be \$100,000, find the expected revenue of Bunny Barn for that month.
+        \item Noah now opens another company: Cuddle Tails! Let $Z$ be a random variable of Cuddle Tails's revenue. The expected revenue of Cuddle Tails, given the revenue of Amazing Hops and Bunny Barn, follows the relationship: $E(Z|X=x, Y=y) = 0.3x+0.4y+\$10,000$. Find the expected revenue of Cuddle Tails, given that company Amazing Hops's revenue is \$100,000.
+    \end{enumerate}    
+\end{problem}
+
+\begin{problem}[\textbf{The Tile Maker}, 10 points]
+
+Nine tiles, each with a unique non-zero digit, are placed into a bag and shuffled. You pick four of them and they form a number in the order you drew them (e.g. if you drew 4, 6, 2, 5 your number is 4625).
+
+\begin{enumerate}[label=(\alph*), resume]
+
+
+\item What is the expected value of the number you draw?
+
+{\em Hint: You can decompose a number into tenths, hundredths, thousandths, and other place values.}
+
+
+\item Now you add a tenth tile with a decimal point into the bag, and repeat the experiment (e.g., if you drew 2, ., 3, 7, in that order, your number is 2.37, however, if you drew ., 2, 3, 7, in that order, your number is 0.237).  What is the expected value of the number you draw?
+
+\end{enumerate}
+\end{problem}
+
+\begin{problem}[\textbf{You may be entitled to compensation}, 10 points]
+Flights from Boston to New York take place every hour. Alice and Bob arrive at Logan airport to board on the 9AM flight. However, they find out their flight is overbooked. Their airline offers them  the following option:
+    
+    \textit{They will take one of the next $5$ flights uniformly at random. Moreover, the flight that Alice will eventually take is independent of the one that Bob will take. They will get reimbursed  $\$100$ for each hour they have to wait.} 
+    
+    They accept the airline's offer. Let $A$ be the amount of money that Alice will get as a reimbursement, and $B$ the amount for Bob. Let $X$ be the sum of Alice's and Bob's reimbursements.
+    
+    \begin{enumerate} [label=(\alph*)]
+        \item Given that Alice gets more than $\$200$ as reimbursement, what is the expected total amount of reimbursement that Alice and Bob will get \textit{(that is the sum of Alice's and Bob's reimbursement)}?
+        
+        \item Given that Alice and Bob take the same flight, what is the expected total amount of reimbursement that Alice and Bob will get?  
+        
+        \item Given that the sum of Alice's and Bob's reimbursements was \$200, what is the expected difference in the reimbursement that Alice and Bob will get?
+
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\textbf{Another busy week}, 10 points]
+    After some unfortunately aligned due dates, Riva has three problem sets $A$, $B$, and $C$ that are all due on Friday at 11:59pm. Problem set $A$ will take 1 hour to complete, $B$ will take 2 hours, and $C$ will take 3 hours.\\
+    
+    It is currently Monday. On each day of the week, Riva will complete exactly one problem set, and she will decide which one to complete by picking randomly. Specifically, the probability of picking a particular problem set is proportional to the number of hours to complete it, i.e.:
+    $$\Pr(\text{pick problem set}) = \frac {\text{(\# of hours to complete)}} {\text{(\# total number of hours remaining)}}$$
+    For example, Riva has a $\frac 1 {1+2+3}$ chance of doing problem set $A$ on Monday, and she has a $\frac 1 {1+3}$ chance of doing $A$ on Tuesday if she did $B$ on Monday. Once she has completed all problem sets, she will not spend any more time doing homework this week.
+
+    \begin{enumerate}[label=(\alph*)]
+        \item What is the expected number of hours Riva will spend doing homework...
+        \begin{enumerate}[label=(\roman*)]
+            \item On Monday?
+            \item On Tuesday?
+            \item On Wednesday? (\textit{Hint: you already know two of the three expectations. What should they sum to?})
+        \end{enumerate}
+    \end{enumerate}
+    Riva likes to procrastinate, but, being a CS237 TA, she does so in a random way. She will flip a fair coin on both Monday and Tuesday (the two results are independent), and if one lands on heads, she will not do any homework that day and put the remaining homework off to the next day.
+    \begin{enumerate}[label=(\alph*),resume]
+        \item In this new setup, what is the expected number of hours Riva will spend doing homework...
+        \begin{enumerate}[label=(\roman*)]
+            \item On Friday?
+            \item On Wednesday?
+        \end{enumerate}
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[{\bf Programming assignment}, 5 points]Download the Python notebook named hw09.ipynb from Piazza. The exact online version is also available for download on Google Colab. Complete all the code assignments in the Python notebook. Submit the Python notebook with your code solutions to ``Homework 09 -- Programming assignment'' on Gradescope. Your submission should be a single .ipynb file. Python notebooks are graded manually; therefore, you must follow all the instructions in the file.
+\end{problem}
+
+
+\end{document}

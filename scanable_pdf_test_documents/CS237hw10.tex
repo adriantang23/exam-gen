@@ -1,0 +1,137 @@
+
+\documentclass[letterpaper,11pt]{article}
+\usepackage{xfrac}
+\usepackage{fullpage,amsthm,amsmath,amsfonts,amssymb,graphicx,color,clrscode,enumitem,float}
+\usepackage[hidelinks]{hyperref}
+% Choose one option (bubbles)
+\newcommand{\chooseone}{{\large{\mbox{$\bigcirc$}}\ }}
+
+% For automata drawings
+\usepackage{pgf,wrapfig}
+\usepackage{tikz}
+\usepackage{forest}
+\usepackage{skak} %for drawing chess symbols
+\usetikzlibrary{arrows,automata}%,snakes}
+\usetikzlibrary{decorations.pathreplacing} %for braces
+\addtolength{\textwidth}{0.2in}
+\addtolength{\oddsidemargin}{-0.1in}
+\addtolength{\evensidemargin}{-0.1in}
+
+\addtolength{\textheight}{0.5in}
+\addtolength{\topmargin}{-0.25in}
+
+\theoremstyle{plain}% default
+\newtheorem{thrm}{Theorem}[section]
+\newtheorem{lemm}[thrm]{Lemma}
+\newtheorem{prop}[thrm]{Proposition}
+\newtheorem*{cor}{Corollary}
+\newtheorem*{rem}{Remark}
+
+\theoremstyle{definition}
+\newtheorem{claim}{Claim}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{observation}{Observation}
+\newtheorem{problem}{\textcolor{blue}{Problem}}
+\newtheorem*{xproblem}{EXTRA Problem}
+\newtheorem{proposition}{Proposition}
+
+\newenvironment{solution}
+  {\begin{quote}\color{blue}\textbf{Solution}. \small}
+  {\end{quote}}
+
+
+\theoremstyle{plain}% default
+
+
+\begin{document}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+
+{\noindent\large
+CS 237: {\em Probability in Computing} \hfill Professors: Alina Ene, Tiago Januario\\
+Boston University \hfill \today\\}
+\vspace{1pt} \hrulefill\vspace{3mm}
+\begin{center}
+{\Large\bf Homework 10 -- Due Wednesday, November 20$^{rd}$, 2024 \underline{by 9:00 PM}}
+\end{center}
+
+\begin{itemize}
+\item Provide step-by-step explanations, not just answers. Answers without explanations will earn a small fraction of the points.
+\item Submit your solutions on Gradescope. Remember to include information about your collaborators (or say ``Collaborators: none'').
+\end{itemize}
+
+\begin{problem}[\textbf{Gachapon machine}, 10 points]
+Riva likes playing gacha games. The gacha machine has 100 unique bunny characters. Each time Riva rolls the gacha machine, the machine outputs a bunny character uniformly at random with replacement, independent of other rolls.
+    \begin{enumerate}[label=(\alph*)]
+        \item What is the expected number rolls until Riva collects all 100 types of bunnies?
+        \item What is the expected number of rolls until Riva collects exactly 50 types of unique bunnies?
+        \item Riva rolls the machine 200 times. What is the expected number of unique bunny types she gets?
+        \item Riva rolls the machine 300 times. What is the expected number of bunny types she gets exactly once?
+        \item Suppose Riva Bun is one of the bunnies and Riva wants it. Use the Most Used Inequality, $1-x\leq e^{-x}$, to show that if she rolls the machine 100 times, the probability that she gets Riva Bun at least once is at least $1/2$. \textit{Hint: Remember that $e \geq 2$, so what does that tell you about the relation between $\frac 1 e$ and $\frac 1 2$?}
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\textbf{Random vacation}, 10 points] After a long period of work, Annie is excited to leave town for a vacation. At the same time, her pet bunny Ash is equally excited to start chewing on her stuff while she's gone. \textbf{For each part of this problem, first identify the correct distribution and its parameters.}
+
+    \begin{enumerate}[label=(\alph*)]
+        \item Being a former CS237 TA, Annie will roll a 20-sided die to determine the number of days she will spend on vacation. What is the expected number of days she will spend on vacation?
+        \item It is currently Monday. Starting today, Annie will depart for her vacation on the first day that has ideal weather. If each day has a $0.3$ chance to have ideal weather independently of others, what is the probability Annie will depart on a weekend (\textbf{any} weekend, not just the first)?
+        \item There are 12 valuable (but tasty!) items in the house that Ash might chew on. Being a very random rabbit, he will chew on each carpet with probability $0.4$, independently of other items. If each chewed item costs \$30 to repair, what is the variance of the number of dollars Annie will spend in repairs?
+        \item When Annie gets home, she will give Ash a banana slice if he chewed on one or fewer of the 12 items. What is the expected value of the indicator that Ash gets a banana slice?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem} (\textbf{From Y to Y}, 10 points)  Alice wants to give her friend a string for their birthday. She knows that her friend likes randomness and dislikes repeating characters. Thus, Alice generates her strings in the following way:
+    \begin{enumerate}[label=(\alph*)]
+        \item Alice uniformly and randomly chooses a capital letter that is not Y to be the first letter of her string, and then she repeatedly adds a uniformly random capital letter (A - Z) that isn't the same as the latest character in the string until she adds the first Y to the string. What is the expected value and the variance of the total length of her string?
+    \end{enumerate}
+
+    Alice knows that her friend's favorite letter is Y, so she decides to generate her string in this way instead:
+    \begin{enumerate}[label=(\alph*)]\setcounter{enumi}{1}
+        \item Alice chooses the first character of the string to be Y, and then she repeatedly adds a uniformly random capital letter (A - Z) that isn't the same as the latest character in the string until she adds the second Y to the string. What is the expected value and the variance of the total length of her string?
+    \end{enumerate}
+
+    Alice decides to not think too hard about how to generate a string so she decides to generate her string in this way instead:
+    \begin{enumerate}[label=(\alph*)]\setcounter{enumi}{2}
+        \item Alice uniformly and randomly chooses a capital letter to be the first letter of her string, and then she repeatedly adds a uniformly random capital letter (A - Z) that isn't the same as the latest character in the string until she adds another Y to the string. What is the expected value and the variance of the total length of her string?
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[\textbf{Jurnalism Mistaks}, 10 points] Phillip is a senior journalist who writes 6 articles every day; for each article he writes, he makes a mistake with probability 0.2 independently of other articles. Bozena is a trainee jornalist who writes 4 articles every day; for each article she writes, she makes a mistake with probability 0.3 independently of other articles.
+\begin{enumerate}[label=(\alph*)]
+    \item Find the standard deviation of the total number of mistakes they make in 5 days.
+    
+    \item The two journalists make a total of 2 mistakes on a given day. What is the probability that Philip made more mistakes than Bozena that day?
+    
+    \item The next day, at least one of the 10 articles they wrote contains a mistake. Find the expected number of total mistakes they made that day.
+    
+    {\em Hint:} Find the expected number of mistakes Philipp and Bozena make in a day. Then apply the Law of Total Expectation.
+
+
+    
+\end{enumerate}
+\end{problem}
+
+\begin{problem}[\textbf{Ping Pong Balls}, 10 points]
+    10 ping pong balls are numbered from 1 to 10 and placed in a bag. A ping pong ball is randomly picked and is removed from the bag. Let $X$ be the number on the ping pong ball that is removed.
+
+    \begin{enumerate} [label=(\alph*)]
+        \item Define the distribution of $X$. What is the expected value of the number on the ping pong ball that is removed?
+        
+        \item What is the probability that the number on the drawn ping pong ball is between 7 and 9?
+        
+        \item Let $Y$ be the indicator random variable that takes the value 1 if the ping pong ball drawn has a number between 7 and 9, and 0 otherwise. Find the distribution, parameter, and PDF of $Y$. 
+        
+        \item Suppose Riva, Steve, Noah, and Champ each randomly pick a ping pong ball from the bag with replacement. What is the expected number of times a ping pong ball numbered between 7 and 9 is picked?
+        
+    \end{enumerate}
+\end{problem}
+
+\begin{problem}[{\bf No programming assignment this week}, 0 points]
+Happy Thanksgiving!
+\end{problem}
+
+\end{document}
