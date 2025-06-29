@@ -374,8 +374,8 @@ def main():
     
     # Example: Add some files (you would replace these with actual file paths)
     sample_files = [
-        ("scanable_pdf_test_documents/wa3.tex", FileCategory.HOMEWORK),
-        ("scanable_pdf_test_documents/wa8.tex", FileCategory.HOMEWORK),
+        # ("scanable_pdf_test_documents/wa3.tex", FileCategory.HOMEWORK),
+        # ("scanable_pdf_test_documents/wa8.tex", FileCategory.HOMEWORK),
         ("scanable_pdf_test_documents/CS237hw5.tex", FileCategory.HOMEWORK),
         ("scanable_pdf_test_documents/Reinforcement_Learning.pptx", FileCategory.LECTURE_SLIDES),
         ("scanable_pdf_test_documents/02-the-basics-A1.pdf", FileCategory.PREVIOUS_EXAMS),
