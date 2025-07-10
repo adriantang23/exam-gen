@@ -16,7 +16,7 @@ from datetime import datetime
 
 # Add parser directory to path to import the parser
 sys.path.append(str(Path(__file__).parent / 'parser'))
-from parser import DocumentParser
+from parser.parser import DocumentParser
 
 
 class FileCategory(Enum):
