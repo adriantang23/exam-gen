@@ -110,70 +110,99 @@ def organize_content(file_paths: Tuple[Optional[str], Optional[str], Optional[st
     return results
 
 
-def build_and_send_prompts() -> dict:
-    """Build prompts and send to LLM using prompt_builder module."""
-    from prompt_builder import main as prompt_builder_main
+def build_and_send_prompts(parsed_texts: List[str]) -> dict:
+    """Build prompts and send to LLM using the new batch method."""
+    from LLM import LLMExamGenerator
     
     print("🤖 Building prompts and generating questions...")
     
-    # Call the original prompt_builder main function
-    # This will use the hardcoded sample files and generate questions
-    prompt_builder_main()
+    # Create lecture context from parsed texts
+    lecture_context = "\n\n".join(parsed_texts[:3])  # Use first 3 sections as context
     
-    return {"status": "completed"}
+    # Create exam examples from parsed texts (use different sections)
+    exam_examples = parsed_texts[3:6] if len(parsed_texts) >= 6 else parsed_texts[1:3]
+    
+    # Instantiate the new LLMExamGenerator
+    generator = LLMExamGenerator(model="gpt-4", temperature=0.2)
+    result = generator.generate_exam(
+        lecture_context=lecture_context,
+        exam_examples=exam_examples,
+        num_questions=5,
+        include_answers=False,
+    )
+    
+    # Print the result
+    if "error" in result:
+        print(f"❌ LLM call failed: {result['error']}")
+        return {"status": "error", "message": result['error']}
+    else:
+        print("\n=== GENERATED PRACTICE EXAM ===\n")
+        print(result["raw"])
+        
+        # Save to a text file for reference
+        output_dir = Path("generated")
+        output_dir.mkdir(exist_ok=True)
+        with open(output_dir / "practice_exam.txt", "w") as f:
+            f.write(result["raw"])
+        
+        return {"status": "completed", "content": result["raw"]}
 
 
-def save_output() -> None:
-    """Save and display the generated output."""
-    print("💾 Saving output...")
-    
-    # Check for generated files
-    output_dir = Path("LLM_output")
-    if output_dir.exists():
-        print("Generated files:")
-        for file_path in output_dir.glob("*.json"):
-            print(f"  📄 {file_path}")
-    
-    # Also check for the generated practice exam
+def save_output_and_generate_pdf() -> None:
+    """Read the generated text file and create a PDF automatically."""
+    from output import questions_to_pdf
     practice_exam_path = Path("generated/practice_exam.txt")
     if practice_exam_path.exists():
-        print(f"📝 Practice exam saved to: {practice_exam_path}")
-        with open(practice_exam_path, 'r') as f:
+        print("📝 Reading from practice_exam.txt...")
+        with open(practice_exam_path, 'r', encoding='utf-8') as f:
             content = f.read()
-            print("\n" + "="*50)
-            print("GENERATED PRACTICE EXAM")
-            print("="*50)
-            print(content[:500] + "..." if len(content) > 500 else content)
-    
-    print("✅ Generation complete!")
+        # Extract questions from the content (simple parsing)
+        questions = []
+        lines = content.split('\n')
+        current_question = ""
+        for line in lines:
+            if line.strip().startswith('Q') and '.' in line:
+                if current_question.strip():
+                    questions.append(current_question.strip())
+                current_question = line
+            elif line.strip():
+                current_question += "\n" + line
+        if current_question.strip():
+            questions.append(current_question.strip())
+        if questions:
+            print(f"📝 Found {len(questions)} questions from practice_exam.txt")
+            pdf_path = questions_to_pdf(questions, filename="new_practice_exam", title="New Practice Exam")
+            if pdf_path:
+                print(f"🎉 New practice exam PDF created at: {pdf_path}")
+            else:
+                print("❌ Failed to generate PDF from new practice exam")
+        else:
+            print("❌ No questions found in practice_exam.txt")
+    else:
+        print("❌ practice_exam.txt not found. Cannot generate PDF.")
 
 
 def main():
-    """Main CLI function that follows the pipeline."""
+    """Main CLI function that follows the pipeline end-to-end."""
     try:
         # 1. Get file paths from user (CLI args or interactive)
         file_paths = get_file_paths_from_args()
         if not any(file_paths):
             return
-        
         # 2. Parse documents using parser.py
         parsed_texts = parse_documents(file_paths)
         if not parsed_texts:
             print("No content was successfully parsed. Exiting.")
             return
-        
         # 3. Organize content using organizer.py
         organize_results = organize_content(file_paths)
         if organize_results['processed'] == 0:
             print("No files were successfully organized. Exiting.")
             return
-        
-        # 4. Build prompts and send to LLM using prompt_builder.py
-        llm_results = build_and_send_prompts()
-        
-        # 5. Save and display output
-        save_output()
-        
+        # 4. Build prompts and send to LLM using the new batch method
+        llm_results = build_and_send_prompts(parsed_texts)
+        # 5. Save and display output, and generate PDF
+        save_output_and_generate_pdf()
     except KeyboardInterrupt:
         print("\n❌ Operation cancelled by user.")
     except Exception as e:

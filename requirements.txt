@@ -1,9 +1,19 @@
 PyMuPDF==1.23.14
+fitz  # PyMuPDF alias for compatibility
 python-pptx==0.6.21
 pdfplumber==0.10.3
 Pillow==10.1.0
 pytesseract==0.3.10
 
+tqdm>=4.0.0
 # Added for LLM generation support
 openai==0.28.1
 python-dotenv>=1.0.0
+
+# --- LaTeX PDF Generation ---
+# You MUST install a TeX distribution for PDF output:
+#   - Mac:   brew install --cask mactex (or install BasicTeX)
+#   - Linux: sudo apt-get install texlive-latex-base
+#   - Win:   https://miktex.org/download
+# latexmk is recommended for robust PDF builds (optional)
+# pip install latexmk (if using a Python wrapper)

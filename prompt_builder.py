@@ -3,39 +3,47 @@ from LLM import LLMExamGenerator
 
 
 def main():
+    """
+    Build a single prompt for the LLM to generate a full practice exam in one shot.
+    """
+    # Example: Use the organizer to get lecture context and past exam examples
     organizer = DocumentOrganizer()
-    #organizer to parse files and export to json
+    # For demo, just use a few files (adjust as needed)
     sample_files = [
-        # ("scanable_pdf_test_documents/wa3.tex", FileCategory.HOMEWORK),
-        # ("scanable_pdf_test_documents/wa8.tex", FileCategory.HOMEWORK),
         ("scanable_pdf_test_documents/CS237hw5.tex", FileCategory.HOMEWORK),
         ("scanable_pdf_test_documents/CS237hw09.tex", FileCategory.HOMEWORK),
         ("scanable_pdf_test_documents/CS237hw10.tex", FileCategory.HOMEWORK),
-        ("scanable_pdf_test_documents/cs237L24-annotated.pdf", FileCategory.LECTURE_SLIDES),
-        ("scanable_pdf_test_documents/cs237L25-annotated.pdf", FileCategory.LECTURE_SLIDES),
-        ("scanable_pdf_test_documents/cs237L27-annotated.pdf", FileCategory.LECTURE_SLIDES),
-        ("scanable_pdf_test_documents/CS237_Practice_Midterm.pdf", FileCategory.PREVIOUS_EXAMS),
-        ("scanable_pdf_test_documents/CS237_Practice_Final.pdf", FileCategory.PREVIOUS_EXAMS),
+        # Add more as needed
     ]
-    
-    # Add files to queue
-    added = organizer.add_files_batch(sample_files)
-    print(f"Added {added} files to processing queue")
-    
-    # Process all files
+    organizer.add_files_batch(sample_files)
     results = organizer.process_files()
 
-    # run through LLM.py to generate prompts
-    generator = LLMExamGenerator(slides_per_group=30)
-    generator.generate_from_homeworks("""You are an instructor coming up with an exam. 
-    You are looking through previous homework problems for inspiration.
-    Generate questions based on this, and be pretty similar to them. 
-    Feel free to have multiple parts. NOT EVEN SECTION NEEDS TO HAVE A QUESTION, 
-    IF IT DOESNT FEEL APPROPRIATE DO NOT MAKE THE CALL TO GENERATE QUESTION. 
-    This is for a probability class""", None)
-    generator.generate_from_lecture_slides("You're an instructor. Generate questions for an exam.", None)
-    generator.generate_from_previous_exams("You're an instructor. Generate questions for an exam.", None)
+    # For this refactor, let's mock the lecture context and exam examples
+    # In production, you would extract these from the processed/organized content
+    lecture_context = """
+    Probability theory is the branch of mathematics concerned with probability. It describes the likelihood of events occurring. Key concepts include random variables, expected value, independence, and conditional probability.
+    """
+    exam_examples = [
+        "Let X be a random variable representing the outcome of a fair 6-sided die. What is the probability that X is even?",
+        "Prove that the sum of two independent Poisson random variables is also Poisson distributed.",
+        "Explain the difference between discrete and continuous random variables, with examples.",
+    ]
 
+    # Instantiate the new LLMExamGenerator
+    generator = LLMExamGenerator(model="gpt-4", temperature=0.2)
+    result = generator.generate_exam(
+        lecture_context=lecture_context,
+        exam_examples=exam_examples,
+        num_questions=5,
+        include_answers=False,
+    )
+
+    # Print or save the result
+    if "error" in result:
+        print(f"❌ LLM call failed: {result['error']}")
+    else:
+        print("\n=== GENERATED PRACTICE EXAM ===\n")
+        print(result["raw"])
 
 
 if __name__ == "__main__":
